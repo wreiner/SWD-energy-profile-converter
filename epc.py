@@ -225,8 +225,6 @@ class EnergyProfileConverter:
         for window_elements in self.get_elements_from_sliding_window(
             self.original_data["data"], self.window_size
         ):
-            print(window_elements)
-
             # build the average
             if self.start_interval < self.convert_interval:
                 average = sum(window_elements) / self.window_size
