@@ -28,7 +28,7 @@ class EnergyProfileConverter():
         self.initialize()
 
     def initialize(self):
-        self.load_json_data(self.args["src"][0])
+        self.load_json_data(self.args["in"][0])
         self.output_dict = self.initialize_output_dict(self.original_data)
 
         self.start_interval = int(self.original_data["interval_in_minutes"])
@@ -47,21 +47,21 @@ class EnergyProfileConverter():
         # if needed
         # optional = parser.add_argument_group('optional arguments')
 
-        # use if -src and -dst need to be positional arguments
+        # use if -in and -out need to be positional arguments
         # add validation for positional arguments if needed
-        # required.add_argument("src",
+        # required.add_argument("in",
         #     nargs="?",
         #     help="Path of source file to read from")
-        # required.add_argument("dst",
+        # required.add_argument("out",
         #     nargs="?",
         #     help="Path of destination file to write converted data to")
 
-        required.add_argument("-src",
+        required.add_argument("-in",
             nargs=1,
             help="Path of source file to read from",
             required=True)
 
-        required.add_argument("-dst",
+        required.add_argument("-out",
             nargs=1,
             help="Path of destination file to write converted data to",
             required=True)
@@ -186,7 +186,7 @@ class EnergyProfileConverter():
                 self.output_dict["data"].append([single_element for v in range(0, self.padding)])
 
         # print(self.output_dict)
-        self.write_json_data(self.args["dst"][0])
+        self.write_json_data(self.args["out"][0])
 
 
 if __name__ == "__main__":
