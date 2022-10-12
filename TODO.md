@@ -1,7 +1,9 @@
 # ToDos to finish
 
-* [ ] read commandline arguments
+* [X] read commandline arguments
 * [X] read json data
-* [ ] write json data
-* [ ] convert unit
-* [ ] interval change
+* [X] write json data
+* [X] convert unit
+* [X] interval change
+* [X] add README
+* [ ] add docstrings and refactor code
