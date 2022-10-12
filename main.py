@@ -1,72 +1,194 @@
+import argparse
 import json
+from operator import truediv, mul
 
 
-def get_elements_from_sliding_window(data_array, window_size):
-    """
-    get_elements_from_sliding_window reads
-    """
-    if len(data_array) < window_size:
-        print("error, window size bigger than data array")
-        return None
+CONVERSION_TABLE = {
+    "kWh2Wh": {"operator": "*", "factor": 1000},
+    "kWh2KJ": {"operator": "*", "factor": 3600},
+    "kWh2J": {"operator": "*", "factor": 3600000},
 
-    window_position = 0
-    while window_position < len(data_array):
-        yield data_array[window_position:window_position+window_size]
-        window_position += window_size
+    "Wh2kWh": {"operator": "/", "factor": 1000},
+    "Wh2KJ": {"operator": "*", "factor": 3.6},
+    "Wh2J": {"operator": "*", "factor": 3600},
+
+    "KJ2kWh": {"operator": "/", "factor": 3600},
+    "KJ2Wh": {"operator": "/", "factor": 3.6},
+    "KJ2J": {"operator": "*", "factor": 1000},
+
+    "J2kWh": {"operator": "/", "factor": 3600000},
+    "J2Wh": {"operator": "/", "factor": 3600},
+    "J2KJ": {"operator": "/", "factor": 1000},
+}
 
 
-def main():
-    with open('data/15min-test-int.json', 'r') as f:
-        data = json.load(f)
+class EnergyDataConverter():
+    def __init__(self):
+        self.parse_commandline_arguments()
+        self.initialize()
 
-    start_interval = int(data["interval_in_minutes"])
-    convert_interval = 60
+    def initialize(self):
+        self.load_json_data(self.args["src"][0])
+        self.output_dict = self.initialize_output_dict(self.original_data)
 
-    # if we convert from larger to smaller the window will always be 1
-    # if we convert from smaller to larger we will calculate the size next
-    window_size = 1
+        self.start_interval = int(self.original_data["interval_in_minutes"])
+        self.convert_interval = int(self.args["interval"][0])
 
-    # padding is only needed if we convert from larger to smaller
-    padding = 0
+        self.from_unit = self.original_data["unit"]
+        self.to_unit = self.args["unit"][0]
 
-    # calculate window_size or padding
-    if start_interval < convert_interval:
-        window_size = int(convert_interval/start_interval)
-        print(f"Window size: {window_size}")
-    else:
-        padding = int(start_interval/convert_interval)
-        print(f"Padding size: {padding}")
+        self.calculate_window_size_and_padding(self.start_interval, self.convert_interval)
 
-    # print(data["data"])
+    def parse_commandline_arguments(self):
+        parser = argparse.ArgumentParser()
 
-    # slide a window with window_size length over the array to extract those elements
-    # use yield to implement iterating with a sliding window
-    for window_elements in get_elements_from_sliding_window(data["data"], window_size):
-        print(window_elements)
-        # build the average
+        parser._action_groups.pop()
+        required = parser.add_argument_group('required arguments')
+        # if needed
+        # optional = parser.add_argument_group('optional arguments')
+
+        # use if -src and -dst need to be positional arguments
+        # add validation for positional arguments if needed
+        # required.add_argument("src",
+        #     nargs="?",
+        #     help="Path of source file to read from")
+        # required.add_argument("dst",
+        #     nargs="?",
+        #     help="Path of destination file to write converted data to")
+
+        required.add_argument("-src",
+            nargs=1,
+            help="Path of source file to read from",
+            required=True)
+
+        required.add_argument("-dst",
+            nargs=1,
+            help="Path of destination file to write converted data to",
+            required=True)
+
+        required.add_argument("-interval",
+            nargs=1,
+            help="Convert to interval in minutes (allowed values 1, 5, 15, 30, 60, 1440)",
+            required=True)
+
+        required.add_argument("-unit",
+            nargs=1,
+            help="Convert data values to target unit (allowd values kWh, Wh, KJ, J)",
+            required=True)
+
+        # convert args to dict
+        self.args = vars(parser.parse_args())
+
+    def load_json_data(self, filename):
+        print(f"will read JSON from {filename} ..")
+
+        with open(filename, 'r') as f:
+            self.original_data = json.load(f)
+
+    def write_json_data(self, filename):
+        print(f"will write output JSON to {filename}")
+
+        with open(filename, "w") as f:
+            json.dump(self.output_dict, f, indent=4)
+
+    def initialize_output_dict(self, original_data):
+        print("will initialize output JSON data structure ..")
+
+        output_dict = dict()
+        # duplicate header information
+        for key in original_data:
+            # initialize new empty data array
+            if key == "data":
+                output_dict[key] = []
+                continue
+
+            output_dict[key] = original_data[key]
+
+        output_dict["interval_in_minutes"] = self.args["interval"][0]
+        output_dict["unit"] = self.args["unit"][0]
+
+        return output_dict
+
+    def get_elements_from_sliding_window(self, data_array, window_size):
+        """
+        get_elements_from_sliding_window reads
+        """
+        if len(data_array) < window_size:
+            print("error, window size bigger than data array")
+            return None
+
+        window_position = 0
+        while window_position < len(data_array):
+            yield data_array[window_position:window_position+window_size]
+            window_position += window_size
+
+    def calculate_window_size_and_padding(self, start_interval, convert_interval):
+        # if we convert from larger to smaller the window will always be 1
+        # if we convert from smaller to larger we will calculate the size next
+        self.window_size = 1
+
+        # padding is only needed if we convert from larger to smaller
+        self.padding = 0
+
+        # calculate window_size or padding
         if start_interval < convert_interval:
-            print(sum(window_elements) / window_size)
+            self.window_size = int(convert_interval/start_interval)
+            print(f"Window size: {self.window_size}")
         else:
-            # add n elements same as current element
-            pass
+            self.padding = int(start_interval/convert_interval)
+            print(f"Padding size: {self.padding}")
 
-    # iterate directly
-    # window_position = 0
-    # while True:
-    #     print(f"will get elements from {window_position} to {window_position+window_size}")
-    #     elements = data["data"][window_position:window_position+window_size]
-    #     print(elements)
-    #     window_position += window_size
-    #     if len(elements) != window_size:
-    #         break
+    def convert_unit(self, value):
+        if (self.from_unit == self.to_unit):
+            print(f"units from {self.from_unit} to {self.to_unit} are equal, will not convert ..")
+            return value
 
+        print(f"will convert value {value} from {self.from_unit} to {self.to_unit} ..")
 
+        conversionkey = self.from_unit + "2" + self.to_unit
+        operator = CONVERSION_TABLE[conversionkey]["operator"]
+        factor = CONVERSION_TABLE[conversionkey]["factor"]
 
-    # 1 minute
-    # 15 minutes
-    # 30 minutes
-    # 1 hour
-    # 1 day
+        if operator == "/":
+            return truediv(value, factor)
+        elif operator == "*":
+            return mul(value, factor)
+        else:
+            return None
+
+    def convert(self):
+        # iterate directly
+        # window_position = 0
+        # while True:
+        #     print(f"will get elements from {window_position} to {window_position+window_size}")
+        #     elements = data["data"][window_position:window_position+window_size]
+        #     print(elements)
+        #     window_position += window_size
+        #     if len(elements) != window_size:
+        #         break
+
+        # slide a window with window_size length over the array to extract those elements
+        # use yield to implement iterating with a sliding window
+        for window_elements in self.get_elements_from_sliding_window(self.original_data["data"], self.window_size):
+            print(window_elements)
+
+            # build the average
+            if self.start_interval < self.convert_interval:
+                average = sum(window_elements) / self.window_size
+                converted_average = self.convert_unit(average)
+                # print(f"converted unit from {average}{self.from_unit} to {converted_average}{self.to_unit}")
+                self.output_dict["data"].append(converted_average)
+            else:
+                # add n elements same as current element
+                single_element = self.convert_unit(window_elements[0])
+                # print(f"converted unit from {window_elements[0]}{self.from_unit} to {single_element}{self.to_unit}")
+
+                self.output_dict["data"].append([single_element for v in range(0, self.padding)])
+
+        # print(self.output_dict)
+        self.write_json_data(self.args["dst"][0])
+
 
 if __name__ == "__main__":
-    main()
+    edc = EnergyDataConverter()
+    edc.convert()
