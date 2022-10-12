@@ -111,7 +111,15 @@ class EnergyProfileConverter():
 
     def get_elements_from_sliding_window(self, data_array, window_size):
         """
-        get_elements_from_sliding_window reads
+        get_elements_from_sliding_window iterates over the data_array and yields
+        an iterable generator which can be used to iterate over the data_array.
+
+        Parameters:
+            data_array  .. array of data to iterate over
+            window_size .. count of items which should be returned for every iteration
+
+        Returns:
+            yield iterable generator
         """
         if len(data_array) < window_size:
             print("error, window size bigger than data array")
@@ -123,6 +131,24 @@ class EnergyProfileConverter():
             window_position += window_size
 
     def calculate_window_size_and_padding(self, start_interval, convert_interval):
+        """
+        calculate_window_size_and_padding is used to determine the window size
+        and the padding.
+
+        The window size will be used to iterate over the data array. If the
+        conversion is from larger to smaller the window will always be 1.
+        If the conversion is from smaller to larger the window size needs to be
+        calculated. In this case no padding is needed.
+        The padding padding will be used to fill the dataset when converting from
+        larger to smaller.
+
+        Parameters:
+            start_interval   .. interval in minutes given by the in-file
+            convert_interval .. interval in minutes to change to
+
+        Returns:
+            Noting
+        """
         # if we convert from larger to smaller the window will always be 1
         # if we convert from smaller to larger we will calculate the size next
         self.window_size = 1
@@ -139,6 +165,17 @@ class EnergyProfileConverter():
             print(f"Padding size: {self.padding}")
 
     def convert_unit(self, value):
+        """
+        convert_unit converts a value to the unit provided as a CLI parameter.
+        To determine with which factor and with which operator to convert the
+        value a CONVERSION_TABLE is used.
+
+        Parameter:
+            value .. parameter to be converted
+
+        Returns:
+            Converted value
+        """
         if (self.from_unit == self.to_unit):
             print(f"units from {self.from_unit} to {self.to_unit} are equal, will not convert ..")
             return value
@@ -157,6 +194,17 @@ class EnergyProfileConverter():
             return None
 
     def convert(self):
+        """
+        convert is the main entrypoint of the epc class. It iterates over the
+        data array, calculates the values, converts values and stores the
+        results in the output dict and writes the new JSON object to the outfile.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         # iterate directly
         # window_position = 0
         # while True:
