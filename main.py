@@ -22,7 +22,7 @@ CONVERSION_TABLE = {
 }
 
 
-class EnergyDataConverter():
+class EnergyProfileConverter():
     def __init__(self):
         self.parse_commandline_arguments()
         self.initialize()
@@ -190,5 +190,5 @@ class EnergyDataConverter():
 
 
 if __name__ == "__main__":
-    edc = EnergyDataConverter()
-    edc.convert()
+    epc = EnergyProfileConverter()
+    epc.convert()
