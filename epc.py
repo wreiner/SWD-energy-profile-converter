@@ -1,28 +1,24 @@
 import argparse
 import json
-from operator import truediv, mul
-
+from operator import mul, truediv
 
 CONVERSION_TABLE = {
     "kWh2Wh": {"operator": "*", "factor": 1000},
     "kWh2KJ": {"operator": "*", "factor": 3600},
     "kWh2J": {"operator": "*", "factor": 3600000},
-
     "Wh2kWh": {"operator": "/", "factor": 1000},
     "Wh2KJ": {"operator": "*", "factor": 3.6},
     "Wh2J": {"operator": "*", "factor": 3600},
-
     "KJ2kWh": {"operator": "/", "factor": 3600},
     "KJ2Wh": {"operator": "/", "factor": 3.6},
     "KJ2J": {"operator": "*", "factor": 1000},
-
     "J2kWh": {"operator": "/", "factor": 3600000},
     "J2Wh": {"operator": "/", "factor": 3600},
     "J2KJ": {"operator": "/", "factor": 1000},
 }
 
 
-class EnergyProfileConverter():
+class EnergyProfileConverter:
     def __init__(self):
         self.parse_commandline_arguments()
         self.initialize()
@@ -37,13 +33,15 @@ class EnergyProfileConverter():
         self.from_unit = self.original_data["unit"]
         self.to_unit = self.args["unit"][0]
 
-        self.calculate_window_size_and_padding(self.start_interval, self.convert_interval)
+        self.calculate_window_size_and_padding(
+            self.start_interval, self.convert_interval
+        )
 
     def parse_commandline_arguments(self):
         parser = argparse.ArgumentParser()
 
         parser._action_groups.pop()
-        required = parser.add_argument_group('required arguments')
+        required = parser.add_argument_group("required arguments")
         # if needed
         # optional = parser.add_argument_group('optional arguments')
 
@@ -56,25 +54,30 @@ class EnergyProfileConverter():
         #     nargs="?",
         #     help="Path of destination file to write converted data to")
 
-        required.add_argument("-in",
-            nargs=1,
-            help="Path of source file to read from",
-            required=True)
+        required.add_argument(
+            "-in", nargs=1, help="Path of source file to read from", required=True
+        )
 
-        required.add_argument("-out",
+        required.add_argument(
+            "-out",
             nargs=1,
             help="Path of destination file to write converted data to",
-            required=True)
+            required=True,
+        )
 
-        required.add_argument("-interval",
+        required.add_argument(
+            "-interval",
             nargs=1,
             help="Convert to interval in minutes (allowed values 1, 5, 15, 30, 60, 1440)",
-            required=True)
+            required=True,
+        )
 
-        required.add_argument("-unit",
+        required.add_argument(
+            "-unit",
             nargs=1,
             help="Convert data values to target unit (allowd values kWh, Wh, KJ, J)",
-            required=True)
+            required=True,
+        )
 
         # convert args to dict
         self.args = vars(parser.parse_args())
@@ -82,7 +85,7 @@ class EnergyProfileConverter():
     def load_json_data(self, filename):
         print(f"will read JSON from {filename} ..")
 
-        with open(filename, 'r') as f:
+        with open(filename) as f:
             self.original_data = json.load(f)
 
     def write_json_data(self, filename):
@@ -127,7 +130,7 @@ class EnergyProfileConverter():
 
         window_position = 0
         while window_position < len(data_array):
-            yield data_array[window_position:window_position+window_size]
+            yield data_array[window_position : window_position + window_size]
             window_position += window_size
 
     def calculate_window_size_and_padding(self, start_interval, convert_interval):
@@ -158,10 +161,10 @@ class EnergyProfileConverter():
 
         # calculate window_size or padding
         if start_interval < convert_interval:
-            self.window_size = int(convert_interval/start_interval)
+            self.window_size = int(convert_interval / start_interval)
             print(f"Window size: {self.window_size}")
         else:
-            self.padding = int(start_interval/convert_interval)
+            self.padding = int(start_interval / convert_interval)
             print(f"Padding size: {self.padding}")
 
     def convert_unit(self, value):
@@ -176,8 +179,10 @@ class EnergyProfileConverter():
         Returns:
             Converted value
         """
-        if (self.from_unit == self.to_unit):
-            print(f"units from {self.from_unit} to {self.to_unit} are equal, will not convert ..")
+        if self.from_unit == self.to_unit:
+            print(
+                f"units from {self.from_unit} to {self.to_unit} are equal, will not convert .."
+            )
             return value
 
         print(f"will convert value {value} from {self.from_unit} to {self.to_unit} ..")
@@ -217,7 +222,9 @@ class EnergyProfileConverter():
 
         # slide a window with window_size length over the array to extract those elements
         # use yield to implement iterating with a sliding window
-        for window_elements in self.get_elements_from_sliding_window(self.original_data["data"], self.window_size):
+        for window_elements in self.get_elements_from_sliding_window(
+            self.original_data["data"], self.window_size
+        ):
             print(window_elements)
 
             # build the average
@@ -231,7 +238,9 @@ class EnergyProfileConverter():
                 single_element = self.convert_unit(window_elements[0])
                 # print(f"converted unit from {window_elements[0]}{self.from_unit} to {single_element}{self.to_unit}")
 
-                self.output_dict["data"].append([single_element for v in range(0, self.padding)])
+                self.output_dict["data"].append(
+                    [single_element for v in range(0, self.padding)]
+                )
 
         # print(self.output_dict)
         self.write_json_data(self.args["out"][0])
