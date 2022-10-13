@@ -68,14 +68,16 @@ class EnergyProfileConverter:
         required.add_argument(
             "-interval",
             nargs=1,
-            help="Convert to interval in minutes (allowed values 1, 5, 15, 30, 60, 1440)",
+            choices=[1, 5, 15, 30, 60, 1440],
+            help="Convert to interval in minutes",
             required=True,
         )
 
         required.add_argument(
             "-unit",
             nargs=1,
-            help="Convert data values to target unit (allowd values kWh, Wh, KJ, J)",
+            choices=["kWh", "Wh", "KJ", "J"],
+            help="Convert data values to target unit",
             required=True,
         )
 
@@ -196,6 +198,7 @@ class EnergyProfileConverter:
         elif operator == "*":
             return mul(value, factor)
         else:
+            print(f"ERROR: unknown operator {operator} found in conversion table")
             return None
 
     def convert(self):
