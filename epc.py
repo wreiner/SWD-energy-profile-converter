@@ -69,6 +69,7 @@ class EnergyProfileConverter:
             "-interval",
             nargs=1,
             choices=[1, 5, 15, 30, 60, 1440],
+            type=int,
             help="Convert to interval in minutes",
             required=True,
         )
@@ -239,7 +240,7 @@ class EnergyProfileConverter:
                 single_element = self.convert_unit(window_elements[0])
                 # print(f"converted unit from {window_elements[0]}{self.from_unit} to {single_element}{self.to_unit}")
 
-                self.output_dict["data"].append(
+                self.output_dict["data"].extend(
                     [single_element for v in range(0, self.padding)]
                 )
 
