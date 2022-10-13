@@ -37,7 +37,7 @@ For the example above this means: The data is an array with 35040 values. Each v
 The script can be run like this:
 
 ```
-$ python epc.py -in data/example.json -out data/output.json -interval 15 -unit Wh
+$ python epc.py -in data/example.json -out data/output.json -interval 15 -unit Wh [--debug]
 ```
 
 The following command line parameters are required:
@@ -48,6 +48,7 @@ The following command line parameters are required:
 | -out      | Output filename                                                                               |
 | -interval | Interval the data should be converted to in minutes<br>Allowed values: 1, 5, 15, 30, 60, 1440 |
 | -unit     | Unit the data should be converted to<br>Allowed values: kWh, Wh, KJ, J                        |
+| --debug   | Enable debug logging (optional)                                                               |
 
 After all data has been converted, the result will be written to the output filename in JSON notation.
 
