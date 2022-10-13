@@ -142,7 +142,7 @@ class EnergyProfileConverter:
         conversion is from larger to smaller the window will always be 1.
         If the conversion is from smaller to larger the window size needs to be
         calculated. In this case no padding is needed.
-        The padding padding will be used to fill the dataset when converting from
+        The padding will be used to fill the dataset when converting from
         larger to smaller.
 
         Parameters:
