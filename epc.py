@@ -29,14 +29,14 @@ class EnergyProfileConverter:
         # setup logging
         self.setup_logging(self.args["debug"])
 
-        self.load_json_data(self.args["in"][0])
+        self.load_json_data(self.args["in"])
         self.output_dict = self.initialize_output_dict(self.original_data)
 
         self.start_interval = int(self.original_data["interval_in_minutes"])
-        self.convert_interval = int(self.args["interval"][0])
+        self.convert_interval = int(self.args["interval"])
 
         self.from_unit = self.original_data["unit"]
-        self.to_unit = self.args["unit"][0]
+        self.to_unit = self.args["unit"]
 
         self.calculate_window_size_and_padding(
             self.start_interval, self.convert_interval
@@ -71,19 +71,17 @@ class EnergyProfileConverter:
         #     help="Path of destination file to write converted data to")
 
         required.add_argument(
-            "-in", nargs=1, help="Path of source file to read from", required=True
+            "-in", help="Path of source file to read from", required=True
         )
 
         required.add_argument(
             "-out",
-            nargs=1,
             help="Path of destination file to write converted data to",
             required=True,
         )
 
         required.add_argument(
             "-interval",
-            nargs=1,
             choices=[1, 5, 15, 30, 60, 1440],
             type=int,
             help="Convert to interval in minutes",
@@ -92,7 +90,6 @@ class EnergyProfileConverter:
 
         required.add_argument(
             "-unit",
-            nargs=1,
             choices=["kWh", "Wh", "KJ", "J"],
             help="Convert data values to target unit",
             required=True,
@@ -130,8 +127,8 @@ class EnergyProfileConverter:
 
             output_dict[key] = original_data[key]
 
-        output_dict["interval_in_minutes"] = self.args["interval"][0]
-        output_dict["unit"] = self.args["unit"][0]
+        output_dict["interval_in_minutes"] = self.args["interval"]
+        output_dict["unit"] = self.args["unit"]
 
         return output_dict
 
@@ -274,7 +271,7 @@ class EnergyProfileConverter:
                     [single_element for v in range(0, self.padding)]
                 )
 
-        self.write_json_data(self.args["out"][0])
+        self.write_json_data(self.args["out"])
 
 
 if __name__ == "__main__":
