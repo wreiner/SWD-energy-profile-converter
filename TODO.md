@@ -6,4 +6,4 @@
 * [X] convert unit
 * [X] interval change
 * [X] add README
-* [ ] add docstrings and refactor code
+* [X] add docstrings and refactor code
